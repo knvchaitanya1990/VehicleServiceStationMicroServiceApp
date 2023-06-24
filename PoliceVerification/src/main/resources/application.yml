@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: PoliceVerification-Service
+  config:
+    import: "optional:configserver:http://localhost:8088"
+
+
+datasource:
+  driverClassName: org.h2.Driver
+  password: admin
+  url: jdbc:h2:mem:VEHICLE_THEFT_DB
+  username: admin
+  h2:
+    console:
+      enabled: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+
+
+
+spring-doc:
+  api-docs:
+    path: /openapi/v3/api-docs
+  packagesToScan: com.epam.snp.policeservice.controller
+  pathsToMatch: /**
+  swagger-ui:
+    path: /openapi/swagger-ui.html

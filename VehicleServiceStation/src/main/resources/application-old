@@ -1,0 +1,34 @@
+spring.application.name=VehicleServiceStation
+server.port=9005
+
+# H2 Database
+#spring.datasource.url=jdbc:h2:mem:VEHICLE_SERVICE_STATION
+spring.datasource.url=jdbc:h2:file:C:/SNP_Project_Assignment/DATABASES/VEHICLE_SERVICE_STATION
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.datasource.username=admin
+spring.datasource.password=admin
+spring.datasource.driverClassName=org.h2.Driver
+spring.jpa.defer-datasource-initialization=true
+spring.h2.console.enabled=true
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.hibernate.ddl-auto=create-drop
+
+security.basic.enabled=false
+management.security.enabled=false
+
+POLICE_VERIFICATION_SERVICE_URL    = http://localhost:9000/api/v1/verify-theft/vehicle/
+INSURANCE_VERIFICATION_SERVICE_URL = http://localhost:9002/api/v1/verify-insurance/
+
+management.endpoints.web.exposure.include=*
+
+springdoc.swagger-ui.path=/swagger-ui-custom.html
+springdoc.swagger-ui.operationsSorter=method
+
+
+spring.zipkin.baseUrl=http://zipkin-server:9411/
+
+# Enable Sleuth for distributed tracing
+spring.sleuth.enabled=true
+
+

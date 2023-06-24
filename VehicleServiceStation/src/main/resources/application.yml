@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: vehicleServiceStation-Service
+  config:
+    import: "optional:configserver:http://localhost:8088"
+
+  datasource:
+    driverClassName: org.h2.Driver
+    password: admin
+    url: jdbc:h2:file:C:/SNP_Project_Assignment/DATABASES/VEHICLE_SERVICE_STATION
+    username: admin
+  h2:
+    console:
+      enabled: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+  sleuth:
+    enabled: true
+  zipkin:
+    baseUrl: http://zipkin-server:9411/
+
+
+spring-doc:
+  swagger-ui:
+    operationsSorter: method
+    path: /swagger-ui-custom.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  security:
+    enabled: false
+security:
+  basic:
+    enabled: false

@@ -1,0 +1,31 @@
+
+
+spring.application.name=PoliceVerification-Service
+server.port=9000
+
+# H2 Database
+spring.datasource.url=jdbc:h2:mem:VEHICLE_THEFT_DB
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=admin
+spring.datasource.password=admin
+spring.jpa.defer-datasource-initialization=true
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.h2.console.enabled=true
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.hibernate.ddl-auto=create-drop
+spring.jpa.generate-ddl=true
+security.basic.enabled=false
+management.security.enabled=false
+management.endpoints.web.exposure.include=*
+
+#Swagger Properties
+springdoc.swagger-ui.path=/openapi/swagger-ui.html
+springdoc.api-docs.path=/openapi/v3/api-docs
+springdoc.packagesToScan=com.epam.snp.policeservice.controller
+springdoc.pathsToMatch=/**
+
+#eureka.client.service-url.defaultZone = http://localhost:8761/eureka
+
+
+
