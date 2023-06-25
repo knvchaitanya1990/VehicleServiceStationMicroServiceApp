@@ -1,4 +1,4 @@
-package com.example.vehicleServiceStation.helper;
+package com.example.vehicleServiceStation.service;
 
 import com.example.vehicleServiceStation.model.ServiceRecord;
 import org.springframework.stereotype.Component;
@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.Random;
 
 @Component
-public class ServiceCostCalculation {
+public class ServiceCostCalculationService {
 
 
     public double serviceCostCalculation(ServiceRecord serviceRecord) {

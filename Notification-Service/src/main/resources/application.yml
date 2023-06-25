@@ -3,8 +3,16 @@ spring:
     name: notification-Service
   config:
     import: "optional:configserver:http://localhost:8088"
+
   kafka:
     bootstrap-servers: localhost:9092
+    topic: service-station
     consumer:
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      group-id: service-station-group
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring:
+          json:
+            value:
+              default:
+                type: com.example.vehicleServiceStation.model.NotificationMessage

@@ -23,9 +23,11 @@ spring:
     show-sql: true
   kafka:
     bootstrap-servers: localhost:9092
+    topic: service-station
+    groupId: service-station-group
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
   sleuth:
     enabled: true

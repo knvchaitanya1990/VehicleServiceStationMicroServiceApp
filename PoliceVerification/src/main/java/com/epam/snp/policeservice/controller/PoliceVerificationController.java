@@ -20,7 +20,7 @@ import java.util.List;
 public class PoliceVerificationController {
 
 
-    private PoliceVerificationService verificationService;
+    private final PoliceVerificationService verificationService;
 
     public PoliceVerificationController(PoliceVerificationService verificationService) {
         this.verificationService =verificationService;

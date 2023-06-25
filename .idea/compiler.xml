@@ -19,13 +19,16 @@
     <bytecodeTargetLevel>
       <module name="API_GATE-WAY" target="17" />
       <module name="demo" target="17" />
+      <module name="Discovery-Service" target="17" />
       <module name="Service-Registy" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="API_GATE-WAY" options="-parameters" />
+      <module name="Discovery-Service" options="-parameters" />
       <module name="InsuranceVerification" options="-parameters" />
+      <module name="Notification-Service" options="-parameters" />
       <module name="PoliceVerification" options="-parameters" />
       <module name="Service-Registy" options="-parameters" />
       <module name="Service-registry" options="-parameters" />

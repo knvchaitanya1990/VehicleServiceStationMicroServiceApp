@@ -1,11 +1,9 @@
 package com.example.vehicleServiceStation.service;
 
-import com.example.vehicleServiceStation.client.PoliceVerificationClient;
-import com.example.vehicleServiceStation.helper.ServiceCostCalculation;
-import com.example.vehicleServiceStation.model.Customer;
-import com.example.vehicleServiceStation.model.ServiceRecord;
-import com.example.vehicleServiceStation.model.Vehicle;
-import com.example.vehicleServiceStation.model.VehicleRequest;
+import com.example.vehicleServiceStation.client.ServiceStationHelper;
+import com.example.vehicleServiceStation.client.VehicleTheftServiceClient;
+import com.example.vehicleServiceStation.model.*;
+import com.example.vehicleServiceStation.producer.KafkaProducer;
 import com.example.vehicleServiceStation.repository.CustomerRepository;
 import com.example.vehicleServiceStation.repository.ServiceRecordRepository;
 import com.example.vehicleServiceStation.repository.VehicleRepository;
@@ -13,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,15 +20,15 @@ import java.util.Optional;
 @Service
 public class VehicleServiceStationCenterService {
 
-
-
     @Autowired
-    private PoliceVerificationClient policeVerificationClient;
+    ServiceStationHelper serviceStationHelper;
     @Autowired NotificationService notificationService;
-    @Autowired ServiceCostCalculation costCalculationService;
+    @Autowired ServiceCostCalculationService costCalculationService;
     @Autowired  VehicleRepository vehicleRepository;
     @Autowired  CustomerRepository customerRepository;
     @Autowired  ServiceRecordRepository serviceRecordRepository;
+
+    @Autowired KafkaProducer kafkaProducer;
 
 
     public List<Vehicle> getAllVehicles() {
@@ -42,40 +41,61 @@ public class VehicleServiceStationCenterService {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-
     public ResponseEntity<String> acceptVehicleForService(VehicleRequest request) {
         Vehicle vehicle = request.getVehicle();
         Customer customer = request.getCustomer();
 
         if (!isValidVehicleType(vehicle)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Vehicle type not supported at our service station. " +
-                    "We cannot accept this vehicle for service.");
+            return ResponseEntity.badRequest().
+                    body("Vehicle type not supported at our service station. We cannot accept this vehicle for service.");
         }
-
-        if (!policeVerificationClient.verifyVehicleInvolvedInTheft(vehicle.getRegistrationNumber())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Vehicle failed police verification for theft. " +
-                    "We cannot accept this vehicle for service.");
-        }
-
-        // Create a service record
+        String vehicleRegistrationNum =  vehicle.getRegistrationNumber();
+        handleTheftVerificationResult(vehicleRegistrationNum);
         ServiceRecord serviceRecord = createServiceRecord(vehicle);
+        saveCustomerAndVehicle(customer, vehicle);
+        ServiceRecord savedRecord = saveServiceRecord(serviceRecord);
+        String message = generateResponseMessage(savedRecord);
+        sendNotificationToCustomer(vehicle.getCustomer(), message);
+        return ResponseEntity.ok(message);
+    }
 
-        // Save the customer and vehicle
+    private ResponseEntity<String> handleTheftVerificationResult(String vehicleRegistrationNum) {
+        boolean verificationResult = serviceStationHelper.verifyVehicleInvolvedInTheft(vehicleRegistrationNum);
+        if (verificationResult) {
+            return ResponseEntity.ok("Vehicle involved in theft.");
+            // Perform actions for a vehicle involved in theft
+        } else {
+            return ResponseEntity.ok("Vehicle not involved in theft.");
+            // Perform actions for a vehicle not involved in theft
+        }
+    }
+
+
+    private ServiceRecord saveServiceRecord(ServiceRecord serviceRecord) {
+       return serviceRecordRepository.save(serviceRecord);
+    }
+
+    private void saveCustomerAndVehicle(Customer customer, Vehicle vehicle) {
         customerRepository.save(customer);
         vehicle.setCustomer(customer);
         vehicleRepository.save(vehicle);
-
-        // Save the service record
-        ServiceRecord savedRecord = serviceRecordRepository.save(serviceRecord);
-        Long serviceRecordId = savedRecord.getId();
-
-        // Send notification to the customer
-        String message = "Your vehicle has been accepted for service with Request Number: " + serviceRecordId +
-                " and estimated delivery of your vehicle on: " + savedRecord.getEstimateDeliveryDay();
-        notificationService.sendNotificationToCustomer(vehicle.getCustomer(), message);
-
-        return ResponseEntity.ok(message);
     }
+
+
+    // Producer logic
+    private void sendNotificationToCustomer(Customer customer, String message) {
+        NotificationMessage notificationMessage = new NotificationMessage();
+        notificationMessage.setEmail(customer.getEmail());
+        notificationMessage.setMessage(message);
+        kafkaProducer.sendNotification(notificationMessage);
+
+    }
+
+    private String generateResponseMessage(ServiceRecord serviceRecord) {
+        return "Your vehicle has been accepted for service with Request Number: " +
+                serviceRecord.getId() + " and estimated delivery of your vehicle on: " + serviceRecord.getEstimateDeliveryDay();
+    }
+
 
     private boolean isValidVehicleType(Vehicle vehicle) {
         String vehicleType = vehicle.getVehicleType();
@@ -95,22 +115,19 @@ public class VehicleServiceStationCenterService {
 
     public ResponseEntity<String> completeServiceForVehicle(Long serviceRequestId) {
         ServiceRecord serviceRecord = serviceRecordRepository.getReferenceById(serviceRequestId);
-        serviceRecord.setInsured(policeVerificationClient.verifyVehicleInvolvedInTheft(serviceRecord.getVehicle().getRegistrationNumber()));
+        serviceRecord.setInsured(serviceStationHelper.verifyVehicleInvolvedInTheft(serviceRecord.getVehicle().getRegistrationNumber()));
         double totalServiceCost = costCalculationService.serviceCostCalculation(serviceRecord);
         serviceRecord.setServiceCompleted(true);
         serviceRecordRepository.save(serviceRecord);
-
         Vehicle vehicle = serviceRecord.getVehicle();
         Customer customer = vehicle.getCustomer();
         String message = "Your vehicle service is completed with a total Service Cost of " + totalServiceCost;
         notificationService.sendNotificationToCustomer(customer, message);
-
         return ResponseEntity.ok("Vehicle service completion updated successfully.");
     }
 
 
     public Optional<ServiceRecord> getServiceRecordbyID(Long serviceRecordId) {
-
         return serviceRecordRepository.findById(serviceRecordId);
     }
 

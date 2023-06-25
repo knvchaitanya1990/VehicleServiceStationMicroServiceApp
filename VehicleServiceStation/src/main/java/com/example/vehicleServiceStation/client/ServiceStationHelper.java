@@ -1,4 +1,4 @@
-package com.example.vehicleServiceStation.helper;
+package com.example.vehicleServiceStation.client;
 
 import com.example.vehicleServiceStation.response.VehicleTheftVerificationResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +12,6 @@ import java.util.Objects;
 @Component
 public class ServiceStationHelper {
 
-   // @Value("${POLICE_VERIFICATION_SERVICE_URL}")
     @Value("${endpoint.serviceUrl.insurance-service}")
     private String insuranceEndPoint;
 
@@ -22,10 +21,12 @@ public class ServiceStationHelper {
 
     RestTemplate restTemplate = new RestTemplate();
 
-    public boolean performPoliceVerification(String registrationNumber) {
+    public boolean verifyVehicleInvolvedInTheft(String registrationNumber) {
         try {
-            ResponseEntity<VehicleTheftVerificationResponse> verificationResult = restTemplate.getForEntity(
-                    policeVerificationEndPoint + registrationNumber, VehicleTheftVerificationResponse.class);
+
+            String urlWithParams = String.format("%s?registrationNumber=%s", policeVerificationEndPoint, registrationNumber);
+            ResponseEntity<VehicleTheftVerificationResponse> verificationResult =
+                    restTemplate.getForEntity(urlWithParams, VehicleTheftVerificationResponse.class);
            return Objects.requireNonNull(verificationResult.getBody()).isVerified();
         } catch (Exception e) {
             // Handle the exception and return a default value (e.g., false)
