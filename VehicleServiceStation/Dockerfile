@@ -10,5 +10,8 @@ COPY target/VehicleServiceStation-0.0.1-SNAPSHOT.jar .
 # Expose the port that the application listens on
 EXPOSE 9005
 
+# Set the image name and tag
+ARG IMAGE_NAME=vehicleServiceStation:latest
+
 # Set the command to run the application when the container starts
 CMD ["java", "-jar", "VehicleServiceStation-0.0.1-SNAPSHOT.jar"]

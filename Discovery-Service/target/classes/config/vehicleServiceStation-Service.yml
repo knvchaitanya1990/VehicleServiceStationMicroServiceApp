@@ -1,0 +1,8 @@
+server:
+  port: 9001
+
+
+endpoint:
+  serviceUrl:
+    insurance-service: http://localhost:9002/api/v1/verify-insurance/
+    police-service: http://localhost:9000/api/v1/verify-theft/vehicle/

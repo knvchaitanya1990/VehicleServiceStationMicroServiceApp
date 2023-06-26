@@ -17,3 +17,8 @@ Discovery-Service
 cloud-Config-server
 API_GateWay
 Vehicle
+
+
+# install Jenkins
+
+docker run -d -p 8080:8080 -p 50000:50000 jenkins/jenkins
